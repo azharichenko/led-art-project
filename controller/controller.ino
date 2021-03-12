@@ -1,59 +1,29 @@
 #include <FastLED.h>
+#define NUM_LEDS 300
 
-char buffer[24];
-int len = 0;
-CRGB leds[100];
+CRGB leds[NUM_LEDS];
 
 void setup()
 {
-  FastLED.addLeds<WS2812, 2, GRB>(leds, 100);
-  Serial.begin(9600);
+  FastLED.addLeds<WS2812, 2, GRB>(leds, NUM_LEDS);
+  FastLED.setMaxPowerInVoltsAndMilliamps(5, 400);
+  Serial.begin(2152000);
+  Serial.setTimeout(5);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  if (Serial.available()) {
+    if (Serial.readBytes( (char*)leds, NUM_LEDS * 3 + 1) != 0) {
+      //    for (int i = 0; i < NUM_LEDS; i++) {
+      //      Serial.print(leds[i].r);
+      //      Serial.print(',');
+      //      Serial.print(leds[i].g);
+      //      Serial.print(',');
+      //      Serial.print(leds[i].b);
+      //      Serial.print('\n');
+      //    }
+      FastLED.show();
 
-  if (Serial.available() > 0)
-  {
-
-    int incomingByte = Serial.read();
-    buffer[len++] = incomingByte;
-    //
-    // check for overflow
-    //
-    if (len >= 24)
-    {
-      // overflow, resetting
-      len = 0;
-    }
-    //
-    // check for newline (end of message)
-    //
-    if (incomingByte == '\n')
-    {
-      int digit, red, green, blue;
-      int n = sscanf(buffer, "%d %d %d %d", &digit, &red, &green, &blue);
-      if (n == 4)
-      {
-        // valid message received, use values here..
-        leds[digit] =  CRGB(red, green, blue);
-        //        for (int i = 0; i < 50; i++)
-        //        {
-        //          leds[i] = CRGB(red, green, blue);
-        //        }
-        FastLED.show();
-      }
-      else
-      {
-        // parsing error, reject
-        //        for (int i = 0; i < 50; i++)
-        //        {
-        //          leds[i] = CRGB(0, 0, 0);
-        //        }
-        //        FastLED.show();
-      }
-      len = 0; // reset buffer counter
     }
   }
-
 }
